@@ -1,8 +1,8 @@
 
 #include "ClangCursor.h"
 
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
 
 static CXChildVisitResult cxCursorCountChildren( CXCursor, CXCursor, CXClientData clientData )
 {
@@ -23,6 +23,7 @@ static CXChildVisitResult cxCursorCollectChildren( CXCursor cursor, CXCursor par
 //-------------------------------------------------------------------------
 ClangCursor::ClangCursor( CXCursor cursor, ClangCursor *parent ) : mCursor( cursor ), mParent( parent )
 {
+	printInfo();
 	populateChildren();
 }
 //-------------------------------------------------------------------------
@@ -36,8 +37,7 @@ void ClangCursor::populateChildren()
 //-------------------------------------------------------------------------
 void ClangCursor::_addChild( CXCursor cursor, CXCursor parent )
 {
-	assert( parent.kind == mCursor.kind && parent.xdata == mCursor.xdata &&
-			parent.data[0] == mCursor.data[0] );
+	assert( parent.kind == mCursor.kind && parent.xdata == mCursor.xdata );
 	mChildren.push_back( ClangCursor( cursor, this ) );
 }
 //-------------------------------------------------------------------------
@@ -66,8 +66,23 @@ std::string ClangCursor::getKindStr() const
 	return toString( clang_getCursorKindSpelling( getKind() ) );
 }
 //-------------------------------------------------------------------------
+CXTypeKind ClangCursor::getTypeKind() const
+{
+	return clang_getCursorType( mCursor ).kind;
+}
+//-------------------------------------------------------------------------
+std::string ClangCursor::getTypeKindStr() const
+{
+	return toString( clang_getTypeKindSpelling( clang_getCursorType( mCursor ).kind ) );
+}
+//-------------------------------------------------------------------------
+std::string ClangCursor::getTypeStr() const
+{
+	return toString( clang_getTypeSpelling( clang_getCursorType( mCursor ) ) );
+}
+//-------------------------------------------------------------------------
 void ClangCursor::printInfo()
 {
-	printf( "type %s name %s\n", getKindStr().c_str(), getStr().c_str() );
+	printf( "%s %s %s\n", getKindStr().c_str(), getTypeStr().c_str(), getStr().c_str() );
 	printf( "Comment %s\n", toString( clang_Cursor_getRawCommentText( mCursor ) ).c_str() );
 }

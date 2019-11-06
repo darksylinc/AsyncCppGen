@@ -27,8 +27,13 @@ public:
 	std::string getStr() const;
 
 	CXCursorKind getKind() const;
-
 	std::string getKindStr() const;
+
+	CXTypeKind getTypeKind() const;
+	/// Pretty much useless
+	std::string getTypeKindStr() const;
+	/// Useful, pretty prints the type of variable
+	std::string getTypeStr() const;
 
 	void printInfo();
 };

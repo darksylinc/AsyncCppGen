@@ -7,6 +7,8 @@
 
 #include <stdio.h>
 
+#include <fstream>
+
 ClangParser::ClangParser() : mIndex( 0 ), mUnit( 0 ), mRoot( 0 )
 {
 }
@@ -28,9 +30,58 @@ ClangParser::~ClangParser()
 	}
 }
 //-------------------------------------------------------------------------
+void ClangParser::initUnsavedFiles( const char **filenames, size_t numFilenames )
+{
+	mUnsavedFiles.reserve( mUnsavedFiles.size() + numFilenames );
+	for( size_t i = 0u; i < numFilenames; ++i )
+	{
+		mUnsavedFiles.push_back( UnsavedFile() );
+		initUnsavedFile( filenames[i], mUnsavedFiles.back() );
+	}
+}
+//-------------------------------------------------------------------------
+void ClangParser::initUnsavedFile( const char *filename, UnsavedFile &outUnsavedFile )
+{
+	std::ifstream inFile( filename, std::ios::in | std::ios::binary | std::ios::ate );
+	const size_t fileSize = static_cast<size_t>( inFile.tellg() );
+	outUnsavedFile.filename = filename;
+	outUnsavedFile.contents.resize( fileSize + 1u );
+	inFile.seekg( 0, std::ios::beg );
+	inFile.read( &outUnsavedFile.contents[0], (std::streamsize)fileSize );
+	outUnsavedFile.contents[fileSize] = 0;  // Always null terminated
+}
+//-------------------------------------------------------------------------
+std::vector<CXUnsavedFile> ClangParser::getCXUnsavedFiles() const
+{
+	std::vector<CXUnsavedFile> retVal;
+	retVal.reserve( mUnsavedFiles.size() );
+
+	std::vector<UnsavedFile>::const_iterator itor = mUnsavedFiles.begin();
+	std::vector<UnsavedFile>::const_iterator endt = mUnsavedFiles.end();
+
+	while( itor != endt )
+	{
+		CXUnsavedFile unsavedFile;
+		unsavedFile.Filename = itor->filename.c_str();
+		unsavedFile.Length = itor->contents.size();
+		unsavedFile.Contents = &itor->contents[0];
+		retVal.push_back( unsavedFile );
+		++itor;
+	}
+
+	return retVal;
+}
+//-------------------------------------------------------------------------
 int ClangParser::init()
 {
-	const char *compilerArgs[] = { "-xc++", "-fparse-all-comments" };
+	// Provide a path to a fake std lib implementation to avoid cluttering std vector & string
+	const char *compilerArgs[] = { "-xc++", "-fparse-all-comments",
+								   "-I../Data/stdlib" };
+
+	//	const char *stdlibStub[] = { "../Data/stdlib/string",
+	//								 "../Data/stdlib/vector" };
+	//	initUnsavedFiles( stdlibStub, sizeof( stdlibStub ) / sizeof( stdlibStub[0] ) );
+	//	std::vector<CXUnsavedFile> unsavedFiles = getCXUnsavedFiles();
 
 	mIndex = clang_createIndex( 0, true );
 	mUnit = clang_parseTranslationUnit(
