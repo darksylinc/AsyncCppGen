@@ -5,8 +5,9 @@
 
 #include "clang-c/Index.h"
 
-#include <stdio.h>
+#include "fmt/format.h"
 
+#include <stdio.h>
 #include <fstream>
 
 ClangParser::ClangParser() : mIndex( 0 ), mUnit( 0 ), mRoot( 0 )
@@ -28,6 +29,21 @@ ClangParser::~ClangParser()
 		clang_disposeIndex( mIndex );
 		mIndex = 0;
 	}
+}
+//-------------------------------------------------------------------------
+void ClangParser::loadFile( const char *filename, std::string &outString )
+{
+	std::ifstream inFile( filename, std::ios::in | std::ios::binary | std::ios::ate );
+	const size_t fileSize = static_cast<size_t>( inFile.tellg() );
+	outString.resize( fileSize );
+	inFile.seekg( 0, std::ios::beg );
+	inFile.read( &outString[0], (std::streamsize)fileSize );
+}
+//-------------------------------------------------------------------------
+void ClangParser::saveFile( const char *filename, const std::string &text )
+{
+	std::ofstream inFile( filename, std::ios::out | std::ios::binary );
+	inFile.write( text.c_str(), (std::streamsize)text.size() );
 }
 //-------------------------------------------------------------------------
 void ClangParser::initUnsavedFiles( const char **filenames, size_t numFilenames )
@@ -75,8 +91,7 @@ std::vector<CXUnsavedFile> ClangParser::getCXUnsavedFiles() const
 int ClangParser::init()
 {
 	// Provide a path to a fake std lib implementation to avoid cluttering std vector & string
-	const char *compilerArgs[] = { "-xc++", "-fparse-all-comments",
-								   "-I../Data/stdlib" };
+	const char *compilerArgs[] = { "-xc++", "-fparse-all-comments", "-I../Data/stdlib" };
 
 	//	const char *stdlibStub[] = { "../Data/stdlib/string",
 	//								 "../Data/stdlib/vector" };
@@ -97,7 +112,106 @@ int ClangParser::init()
 
 	CXCursor cursor = clang_getTranslationUnitCursor( mUnit );
 
-	mRoot = new ClangCursor( cursor, 0 );
+	mRoot = new ClangCursor( cursor, 0, this );
+	mRoot->init();
 
 	return 0;
+}
+//-------------------------------------------------------------------------
+void ClangParser::_addAsyncFunc( ClangCursor *cursorFunc )
+{
+	mAsyncFuncs.push_back( cursorFunc );
+}
+//-------------------------------------------------------------------------
+void ClangParser::processAsyncFuncs()
+{
+	loadTemplates();
+
+	std::string bodyHeader;
+	std::string bodyCpp;
+
+	ClangCursorPtrVec::const_iterator itor = mAsyncFuncs.begin();
+	ClangCursorPtrVec::const_iterator endt = mAsyncFuncs.end();
+
+	while( itor != endt )
+	{
+		processAsyncFunc( *itor, bodyHeader, bodyCpp );
+		++itor;
+	}
+
+	bodyHeader = fmt::format( mFileBodyTemplate, "#pragma once", "MyNamespace", bodyHeader );
+	saveFile( "./output.h", bodyHeader );
+	bodyCpp = fmt::format( mFileBodyTemplate, "#include \"output.h\"", "MyNamespace", bodyCpp );
+	saveFile( "./output.cpp", bodyCpp );
+}
+//-------------------------------------------------------------------------
+void ClangParser::loadTemplates()
+{
+	loadFile( "../Data/Template01.cpp", mSourceClassTemplate );
+	loadFile( "../Data/Template01.h", mHeaderClassTemplate );
+	loadFile( "../Data/Template02.h", mFileBodyTemplate );
+}
+//-------------------------------------------------------------------------
+void ClangParser::processAsyncFunc( ClangCursor *cursorFunc, std::string &bodyHeader,
+									std::string &bodyCpp )
+{
+	std::string className = cursorFunc->getParent()->getStr();
+	std::string funcName = cursorFunc->getStr();
+
+	std::string headerVarDecl;
+	std::string sourceFuncCopy;
+	std::string varFuncDecl;
+	std::string varFuncCall;
+
+	const ClangCursorVec &children = cursorFunc->getChildren();
+
+	std::string typeDecl;
+	std::string varName;
+
+	ClangCursorVec::const_iterator itor = children.begin();
+	ClangCursorVec::const_iterator endt = children.end();
+
+	while( itor != endt )
+	{
+		const ClangCursor &child = *itor;
+		typeDecl.clear();
+		varName.clear();
+		std::string typeDecl = child.getTypeStr();
+		std::string typeArgDecl = typeDecl;
+		std::string varName = child.getStr();
+		std::string varNameFuncCall = varName;
+
+		if( typeDecl.back() == '&' )
+		{
+			// Convert references into hard copies
+			typeDecl.pop_back();
+		}
+		else if( typeDecl == "const char *" )
+		{
+			// Convert string pointers into hard copies
+			typeDecl = "std::string";
+			typeArgDecl = "const char *";
+			varNameFuncCall += ".c_str()";
+		}
+
+		// clang-format off
+		headerVarDecl	+= typeDecl + " " + varName + ";\n";
+		varFuncDecl		+= ", " + typeArgDecl + " _" + varName;
+		sourceFuncCopy	+= varName + " = _" + varName + ";\n";
+		varFuncCall		+= varNameFuncCall + ", ";
+		// clang-format on
+		++itor;
+	}
+
+	if( !varFuncCall.empty() )
+	{
+		varFuncCall.pop_back();
+		varFuncCall.pop_back();
+	}
+
+	bodyHeader += fmt::format( mHeaderClassTemplate, className, funcName, headerVarDecl, varFuncDecl );
+	bodyCpp += fmt::format( mSourceClassTemplate, className, funcName,  // {0}, {1}
+							varFuncDecl,                                // {2}
+							sourceFuncCopy,                             // {3}
+							varFuncCall );                              // {4}
 }

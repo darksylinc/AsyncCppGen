@@ -2,6 +2,8 @@
 cmake_minimum_required( VERSION 3.5 )
 project( AsyncCppGen )
 
+set( CXX_STANDARD 11 )
+
 set( EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}" )
 
 include( CMake/Bootstrap.cmake )
@@ -15,6 +17,8 @@ else()
 		file( GLOB_RECURSE ${retVal} ${dir}/*.h ${dir}/*.cpp ${dir}/*.c )
 	endmacro()
 endif()
+
+add_subdirectory( "Dependencies" )
 
 include_directories( "./include" )
 
@@ -30,7 +34,7 @@ if( APPLE )
 endif()
 
 add_executable( ${PROJECT_NAME} WIN32 MACOSX_BUNDLE ${SOURCES} ${HEADERS} ${RESOURCES} )
-target_link_libraries( ${PROJECT_NAME} clang-7 )
+target_link_libraries( ${PROJECT_NAME} clang-7 fmt )
 
 if( APPLE )
 	set_target_properties( ${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_ENABLE_BITCODE "NO" )

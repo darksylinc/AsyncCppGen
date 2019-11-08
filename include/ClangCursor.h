@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+class ClangParser;
 class ClangCursor;
 typedef std::vector<ClangCursor> ClangCursorVec;
 
@@ -15,10 +16,21 @@ class ClangCursor
 	ClangCursor *mParent;
 	ClangCursorVec mChildren;
 
+	ClangParser *mParser;
+
+	bool mIsAsyncFunc;
+
 	void populateChildren();
 
+	void evaluate();
+
 public:
-	ClangCursor( CXCursor cursor, ClangCursor *parent );
+	ClangCursor( CXCursor cursor, ClangCursor *parent, ClangParser *parser );
+
+	void init();
+
+	ClangCursor *getParent() const { return mParent; }
+	const ClangCursorVec &getChildren() const { return mChildren; }
 
 	void _addChild( CXCursor cursor, CXCursor parent );
 

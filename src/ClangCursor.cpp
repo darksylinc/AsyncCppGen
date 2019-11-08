@@ -1,6 +1,8 @@
 
 #include "ClangCursor.h"
 
+#include "ClangParser.h"
+
 #include <assert.h>
 #include <stdio.h>
 
@@ -21,10 +23,19 @@ static CXChildVisitResult cxCursorCollectChildren( CXCursor cursor, CXCursor par
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
-ClangCursor::ClangCursor( CXCursor cursor, ClangCursor *parent ) : mCursor( cursor ), mParent( parent )
+ClangCursor::ClangCursor( CXCursor cursor, ClangCursor *parent, ClangParser *parser ) :
+	mCursor( cursor ),
+	mParent( parent ),
+	mParser( parser ),
+	mIsAsyncFunc( false )
 {
-	printInfo();
+}
+//-------------------------------------------------------------------------
+void ClangCursor::init()
+{
+	// printInfo();
 	populateChildren();
+	evaluate();
 }
 //-------------------------------------------------------------------------
 void ClangCursor::populateChildren()
@@ -35,10 +46,22 @@ void ClangCursor::populateChildren()
 	clang_visitChildren( mCursor, ::cxCursorCollectChildren, this );
 }
 //-------------------------------------------------------------------------
+void ClangCursor::evaluate()
+{
+	std::string comments = toString( clang_Cursor_getRawCommentText( mCursor ) );
+
+	if( comments.find( "!async" ) != std::string::npos )
+	{
+		mIsAsyncFunc = true;
+		mParser->_addAsyncFunc( this );
+	}
+}
+//-------------------------------------------------------------------------
 void ClangCursor::_addChild( CXCursor cursor, CXCursor parent )
 {
 	assert( parent.kind == mCursor.kind && parent.xdata == mCursor.xdata );
-	mChildren.push_back( ClangCursor( cursor, this ) );
+	mChildren.push_back( ClangCursor( cursor, this, mParser ) );
+	mChildren.back().init();
 }
 //-------------------------------------------------------------------------
 std::string ClangCursor::toString( CXString cxString )
@@ -85,4 +108,5 @@ void ClangCursor::printInfo()
 {
 	printf( "%s %s %s\n", getKindStr().c_str(), getTypeStr().c_str(), getStr().c_str() );
 	printf( "Comment %s\n", toString( clang_Cursor_getRawCommentText( mCursor ) ).c_str() );
+	fflush( stdout );
 }
