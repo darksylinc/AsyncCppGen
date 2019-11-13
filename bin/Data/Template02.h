@@ -7,7 +7,22 @@ namespace {1}
 {{
 	struct AsyncBaseClass
 	{{
+		/// When set, the class will be immediately deleted
+		/// after calling run() in the background thread.
+		///
+		/// Set it to false if you want to keep around AsyncBaseClass
+		///
+		/// Defaults to true
+		bool mDeleteAfterRun;
+
+		/// Implementation must set this value to true after calling run()
+		/// to signal it's done. Variable is volatile to prevent compiler
+		/// reordering.
+		volatile bool mIsDone;
+
+		AsyncBaseClass();
 		virtual ~AsyncBaseClass();
+
 		virtual void run() = 0;
 	}};
 

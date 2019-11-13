@@ -5,6 +5,7 @@
 
 namespace {1}
 {{
+	AsyncBaseClass::AsyncBaseClass() : mDeleteAfterRun( true ), mIsDone( false ) {{}}
 	AsyncBaseClass::~AsyncBaseClass() {{}}
 
 	{2}
