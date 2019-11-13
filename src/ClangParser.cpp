@@ -94,10 +94,25 @@ std::vector<CXUnsavedFile> ClangParser::getCXUnsavedFiles() const
 	return retVal;
 }
 //-------------------------------------------------------------------------
-int ClangParser::init()
+int ClangParser::init( const char *pathToFileToParse, const std::vector<std::string> &includeFolders )
 {
 	// Provide a path to a fake std lib implementation to avoid cluttering std vector & string
-	const char *compilerArgs[] = { "-xc++", "-fparse-all-comments", "-I../Data/stdlib" };
+	std::vector<const char *> compilerArgs;
+
+	compilerArgs.reserve( 3u + includeFolders.size() );
+	compilerArgs.push_back( "-xc++" );
+	compilerArgs.push_back( "-fparse-all-comments" );
+	compilerArgs.push_back( "-I../Data/stdlib" );
+	{
+		std::vector<std::string>::const_iterator itor = includeFolders.begin();
+		std::vector<std::string>::const_iterator endt = includeFolders.end();
+
+		while( itor != endt )
+		{
+			compilerArgs.push_back( itor->c_str() );
+			++itor;
+		}
+	}
 
 	//	const char *stdlibStub[] = { "../Data/stdlib/string",
 	//								 "../Data/stdlib/vector" };
@@ -106,8 +121,7 @@ int ClangParser::init()
 
 	mIndex = clang_createIndex( 0, true );
 	mUnit = clang_parseTranslationUnit(
-		mIndex, "/home/matias/Projects/AsyncCppGen/bin/Data/example.h", compilerArgs,
-		sizeof( compilerArgs ) / sizeof( compilerArgs[0] ), 0, 0,
+		mIndex, pathToFileToParse, &compilerArgs[0], static_cast<int>( compilerArgs.size() ), 0, 0,
 		CXTranslationUnit_None | CXTranslationUnit_IncludeBriefCommentsInCodeCompletion );
 
 	if( !mUnit )

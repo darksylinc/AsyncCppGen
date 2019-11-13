@@ -59,7 +59,7 @@ public:
 	ClangParser();
 	~ClangParser();
 
-	int init();
+	int init( const char *pathToFileToParse, const std::vector<std::string> &includeFolders );
 
 	void _addAsyncFunc( ClangCursor *cursorFunc );
 
