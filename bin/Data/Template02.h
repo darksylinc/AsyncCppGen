@@ -5,5 +5,11 @@
 
 namespace {1}
 {{
-    {2}
+	struct AsyncBaseClass
+	{{
+		virtual ~AsyncBaseClass();
+		virtual void run() = 0;
+	}};
+
+	{2}
 }}

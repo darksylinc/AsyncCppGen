@@ -31,7 +31,12 @@ class ClangParser
 
 	std::string mHeaderClassTemplate;
 	std::string mSourceClassTemplate;
-	std::string mFileBodyTemplate;
+	std::string mFileBodySourceTemplate;
+	std::string mFileBodyHeaderTemplate;
+
+	std::string mCustomNamespace;
+	std::string mCustomMacroPrefix;
+	std::string mCustomIncludeHeader;
 
 	std::vector<CXUnsavedFile> getCXUnsavedFiles() const;
 

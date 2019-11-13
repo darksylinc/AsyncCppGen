@@ -10,7 +10,13 @@
 #include <stdio.h>
 #include <fstream>
 
-ClangParser::ClangParser() : mIndex( 0 ), mUnit( 0 ), mRoot( 0 )
+ClangParser::ClangParser() :
+	mIndex( 0 ),
+	mUnit( 0 ),
+	mRoot( 0 ),
+	mCustomNamespace( "Vidya" ),
+	mCustomMacroPrefix( "vidya_" ),
+	mCustomIncludeHeader( "#include \"VidyaPrerequisites.h\"" )
 {
 }
 //-------------------------------------------------------------------------
@@ -139,9 +145,10 @@ void ClangParser::processAsyncFuncs()
 		++itor;
 	}
 
-	bodyHeader = fmt::format( mFileBodyTemplate, "#pragma once", "MyNamespace", bodyHeader );
+	bodyHeader = fmt::format( mFileBodyHeaderTemplate, "#pragma once\n" + mCustomIncludeHeader,
+							  mCustomNamespace, bodyHeader );
 	saveFile( "./output.h", bodyHeader );
-	bodyCpp = fmt::format( mFileBodyTemplate, "#include \"output.h\"", "MyNamespace", bodyCpp );
+	bodyCpp = fmt::format( mFileBodySourceTemplate, "#include \"output.h\"", mCustomNamespace, bodyCpp );
 	saveFile( "./output.cpp", bodyCpp );
 }
 //-------------------------------------------------------------------------
@@ -149,7 +156,8 @@ void ClangParser::loadTemplates()
 {
 	loadFile( "../Data/Template01.cpp", mSourceClassTemplate );
 	loadFile( "../Data/Template01.h", mHeaderClassTemplate );
-	loadFile( "../Data/Template02.h", mFileBodyTemplate );
+	loadFile( "../Data/Template02.cpp", mFileBodySourceTemplate );
+	loadFile( "../Data/Template02.h", mFileBodyHeaderTemplate );
 }
 //-------------------------------------------------------------------------
 void ClangParser::processAsyncFunc( ClangCursor *cursorFunc, std::string &bodyHeader,
@@ -209,7 +217,8 @@ void ClangParser::processAsyncFunc( ClangCursor *cursorFunc, std::string &bodyHe
 		varFuncCall.pop_back();
 	}
 
-	bodyHeader += fmt::format( mHeaderClassTemplate, className, funcName, headerVarDecl, varFuncDecl );
+	bodyHeader += fmt::format( mHeaderClassTemplate, className, funcName, headerVarDecl, varFuncDecl,
+							   mCustomMacroPrefix );
 	bodyCpp += fmt::format( mSourceClassTemplate, className, funcName,  // {0}, {1}
 							varFuncDecl,                                // {2}
 							sourceFuncCopy,                             // {3}
