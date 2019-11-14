@@ -253,7 +253,7 @@ void ClangParser::processAsyncFunc( ClangCursor *cursorFunc, std::string &bodyHe
 		// clang-format off
 		headerVarDecl	+= typeDecl + " " + varName + ";\n";
 		varFuncDecl		+= ", " + typeArgDecl + " _" + varName;
-		sourceFuncCopy	+= varName + " = _" + varName + ";\n";
+		sourceFuncCopy	+= ",\n" + varName + "( _" + varName + " )";
 		varFuncCall		+= varNameFuncCall + ", ";
 		// clang-format on
 		++itor;
