@@ -143,6 +143,40 @@ void ClangParser::_addAsyncFunc( ClangCursor *cursorFunc )
 	mAsyncFuncs.push_back( cursorFunc );
 }
 //-------------------------------------------------------------------------
+void ClangParser::setSettings( const std::string &namespaceValue, const std::string &macroPrefix,
+							   const std::string &outputHeaderFullpath,
+							   const std::string &outputSourceFullpath,
+							   const std::vector<std::string> &extraIncludesHeader,
+							   const std::vector<std::string> &extraIncludesSource )
+{
+	mCustomNamespace = namespaceValue;
+	mCustomMacroPrefix = macroPrefix;
+	mOutputHeaderFullpath = outputHeaderFullpath;
+	mOutputSourceFullpath = outputSourceFullpath;
+
+	mCustomIncludeHeader.clear();
+	std::vector<std::string>::const_iterator itor = extraIncludesHeader.begin();
+	std::vector<std::string>::const_iterator endt = extraIncludesHeader.end();
+
+	while( itor != endt )
+	{
+		mCustomIncludeHeader += *itor;
+		mCustomIncludeHeader.push_back( '\n' );
+		++itor;
+	}
+
+	mCustomIncludeSource.clear();
+	itor = extraIncludesSource.begin();
+	endt = extraIncludesSource.end();
+
+	while( itor != endt )
+	{
+		mCustomIncludeSource += *itor;
+		mCustomIncludeSource.push_back( '\n' );
+		++itor;
+	}
+}
+//-------------------------------------------------------------------------
 void ClangParser::processAsyncFuncs()
 {
 	loadTemplates();
@@ -161,9 +195,9 @@ void ClangParser::processAsyncFuncs()
 
 	bodyHeader = fmt::format( mFileBodyHeaderTemplate, "#pragma once\n" + mCustomIncludeHeader,
 							  mCustomNamespace, bodyHeader );
-	saveFile( "./output.h", bodyHeader );
-	bodyCpp = fmt::format( mFileBodySourceTemplate, "#include \"output.h\"", mCustomNamespace, bodyCpp );
-	saveFile( "./output.cpp", bodyCpp );
+	saveFile( mOutputHeaderFullpath.c_str(), bodyHeader );
+	bodyCpp = fmt::format( mFileBodySourceTemplate, mCustomIncludeSource, mCustomNamespace, bodyCpp );
+	saveFile( mOutputSourceFullpath.c_str(), bodyCpp );
 }
 //-------------------------------------------------------------------------
 void ClangParser::loadTemplates()

@@ -37,13 +37,20 @@ class ClangParser
 	std::string mCustomNamespace;
 	std::string mCustomMacroPrefix;
 	std::string mCustomIncludeHeader;
+	std::string mCustomIncludeSource;
+
+	std::string mOutputHeaderFullpath;
+	std::string mOutputSourceFullpath;
 
 	std::vector<CXUnsavedFile> getCXUnsavedFiles() const;
 
+public:
 	/// Loads the contents of 'filename' into outString
-	void loadFile( const char *filename, std::string &outString );
+	static void loadFile( const char *filename, std::string &outString );
+
+protected:
 	/// Saves the contents of text into 'filename'
-	void saveFile( const char *filename, const std::string &text );
+	static void saveFile( const char *filename, const std::string &text );
 
 	void initUnsavedFiles( const char **filenames, size_t numFilenames );
 	static void initUnsavedFile( const char *filename, UnsavedFile &outUnsavedFile );
@@ -62,6 +69,11 @@ public:
 	int init( const char *pathToFileToParse, const std::vector<std::string> &includeFolders );
 
 	void _addAsyncFunc( ClangCursor *cursorFunc );
+
+	void setSettings( const std::string &namespaceValue, const std::string &macroPrefix,
+					  const std::string &outputHeaderFullpath, const std::string &outputSourceFullpath,
+					  const std::vector<std::string> &extraIncludesHeader,
+					  const std::vector<std::string> &extraIncludesSource );
 
 	/// Iterates all async functions, formats them and generates final output
 	void processAsyncFuncs();
