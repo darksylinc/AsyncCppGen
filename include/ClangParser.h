@@ -90,11 +90,6 @@ public:
 					  const std::vector<std::string> &extraIncludesHeader,
 					  const std::vector<std::string> &extraIncludesSource );
 
-	void setSettings( const std::string &namespaceValue, const std::string &macroPrefix,
-					  const std::string &outputHeaderFullpath, const std::string &outputSourceFullpath,
-					  const std::vector<std::string> &extraIncludesHeader,
-					  const std::vector<std::string> &extraIncludesSource );
-
 	/// Iterates all async functions, formats them and generates final output
 	void processAsyncFuncs();
 };
