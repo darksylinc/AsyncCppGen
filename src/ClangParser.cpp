@@ -143,6 +143,11 @@ void ClangParser::_addAsyncFunc( ClangCursor *cursorFunc )
 	mAsyncFuncs.push_back( cursorFunc );
 }
 //-------------------------------------------------------------------------
+void ClangParser::_addAsyncSwitchFunc( ClangCursor *cursorFunc, const std::string &className )
+{
+	mAsyncSwitchFuncs[className].push_back( cursorFunc );
+}
+//-------------------------------------------------------------------------
 void ClangParser::setSettings( const std::string &namespaceValue, const std::string &macroPrefix,
 							   const std::string &outputHeaderFullpath,
 							   const std::string &outputSourceFullpath,
@@ -184,13 +189,40 @@ void ClangParser::processAsyncFuncs()
 	std::string bodyHeader;
 	std::string bodyCpp;
 
-	ClangCursorPtrVec::const_iterator itor = mAsyncFuncs.begin();
-	ClangCursorPtrVec::const_iterator endt = mAsyncFuncs.end();
-
-	while( itor != endt )
 	{
-		processAsyncFunc( *itor, bodyHeader, bodyCpp );
-		++itor;
+		ClangCursorPtrVec::const_iterator itor = mAsyncFuncs.begin();
+		ClangCursorPtrVec::const_iterator endt = mAsyncFuncs.end();
+
+		while( itor != endt )
+		{
+			processAsyncFunc( *itor, bodyHeader, bodyCpp );
+			++itor;
+		}
+	}
+
+	{
+		size_t internalIdx = 0u;
+		ClangCursorPtrVecMap::const_iterator itMap = mAsyncSwitchFuncs.begin();
+		ClangCursorPtrVecMap::const_iterator enMap = mAsyncSwitchFuncs.end();
+
+		while( itMap != enMap )
+		{
+			std::string switchBodyCpp;
+
+			ClangCursorPtrVec::const_iterator itor = itMap->second.begin();
+			ClangCursorPtrVec::const_iterator endt = itMap->second.end();
+			while( itor != endt )
+			{
+				processAsyncSwitchFunc( *itor, itMap->first, internalIdx, bodyHeader, bodyCpp,
+										switchBodyCpp );
+				++internalIdx;
+				++itor;
+			}
+
+			bodyCpp += fmt::format( mSourceAsyncSwitchTemplateFuncBody, itMap->first, switchBodyCpp );
+
+			++itMap;
+		}
 	}
 
 	bodyHeader = fmt::format( mFileBodyHeaderTemplate, "#pragma once\n" + mCustomIncludeHeader,
@@ -206,6 +238,11 @@ void ClangParser::loadTemplates()
 	loadFile( "../Data/Template01.h", mHeaderClassTemplate );
 	loadFile( "../Data/Template02.cpp", mFileBodySourceTemplate );
 	loadFile( "../Data/Template02.h", mFileBodyHeaderTemplate );
+
+	loadFile( "../Data/SwitchImpl_Template01_FunctionBody.cpp", mSourceAsyncSwitchTemplateFuncBody );
+	loadFile( "../Data/SwitchImpl_Template02_CaseBody.cpp", mSourceAsyncSwitchTemplateCaseBody );
+	loadFile( "../Data/SwitchImpl_Template03_ClassDecl.cpp", mSourceAsyncSwitchTemplateClassDecl );
+	loadFile( "../Data/SwitchImpl_Template03_ClassDecl.h", mHeaderAsyncSwitchTemplateClassDecl );
 }
 //-------------------------------------------------------------------------
 void ClangParser::processAsyncFunc( ClangCursor *cursorFunc, std::string &bodyHeader,
@@ -271,4 +308,72 @@ void ClangParser::processAsyncFunc( ClangCursor *cursorFunc, std::string &bodyHe
 							varFuncDecl,                                // {2}
 							sourceFuncCopy,                             // {3}
 							varFuncCall );                              // {4}
+}
+//-------------------------------------------------------------------------
+void ClangParser::processAsyncSwitchFunc( ClangCursor *cursorFunc, const std::string &className,
+										  size_t internalIdx, std::string &bodyHeader,
+										  std::string &bodyCpp, std::string &switchBodyCpp )
+{
+	std::string derivedClassName = cursorFunc->getParent()->getStr();
+	std::string funcName = cursorFunc->getStr();
+
+	std::string headerVarDecl;
+	std::string sourceFuncCopy;
+	std::string varFuncDecl;
+	std::string varFuncCall;
+
+	const ClangCursorVec &children = cursorFunc->getChildren();
+
+	std::string typeDecl;
+	std::string varName;
+
+	ClangCursorVec::const_iterator itor = children.begin();
+	ClangCursorVec::const_iterator endt = children.end();
+
+	while( itor != endt )
+	{
+		const ClangCursor &child = *itor;
+		typeDecl.clear();
+		varName.clear();
+		std::string typeDecl = child.getTypeStr();
+		std::string typeArgDecl = typeDecl;
+		std::string varName = child.getStr();
+		std::string varNameFuncCall = varName;
+
+		if( typeDecl.back() == '&' )
+		{
+			// Convert references into hard copies
+			typeDecl.pop_back();
+		}
+		else if( typeDecl == "const char *" )
+		{
+			// Convert string pointers into hard copies
+			typeDecl = "std::string";
+			typeArgDecl = "const char *";
+			varNameFuncCall += ".c_str()";
+		}
+
+		// clang-format off
+		headerVarDecl	+= typeDecl + " " + varName + ";\n";
+		varFuncDecl		+= ", " + typeArgDecl + " _" + varName;
+		sourceFuncCopy	+= ",\n" + varName + "( _" + varName + " )";
+		varFuncCall		+= varNameFuncCall + ", ";
+		// clang-format on
+		++itor;
+	}
+
+	if( !varFuncCall.empty() )
+	{
+		varFuncCall.pop_back();
+		varFuncCall.pop_back();
+	}
+
+	switchBodyCpp += fmt::format( mSourceAsyncSwitchTemplateCaseBody, internalIdx, derivedClassName,
+								  funcName, varFuncCall );
+
+	bodyCpp += fmt::format( mSourceAsyncSwitchTemplateClassDecl, derivedClassName, funcName, varFuncDecl,
+							internalIdx, sourceFuncCopy );
+
+	bodyHeader += fmt::format( mHeaderAsyncSwitchTemplateClassDecl, className, funcName, headerVarDecl,
+							   varFuncDecl, mCustomMacroPrefix );
 }

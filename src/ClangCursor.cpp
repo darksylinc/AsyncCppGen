@@ -50,7 +50,24 @@ void ClangCursor::evaluate()
 {
 	std::string comments = toString( clang_Cursor_getRawCommentText( mCursor ) );
 
-	if( comments.find( "!async" ) != std::string::npos )
+	const size_t asyncSwitchLength = sizeof( "!async_switch" ) - 1u;
+
+	bool hasAsyncSwitch = false;
+	size_t pos = comments.find( "!async_switch" );
+	while( pos != std::string::npos )
+	{
+		const size_t classNameStart = pos + asyncSwitchLength + 1u;
+		const size_t classNameEnd = comments.find_first_of( "\n", classNameStart );
+
+		std::string className = comments.substr( classNameStart, classNameEnd - classNameStart );
+		mParser->_addAsyncSwitchFunc( this, className );
+
+		mIsAsyncFunc = true;
+		hasAsyncSwitch = true;
+		pos = comments.find( "!async_switch", classNameEnd );
+	}
+
+	if( !hasAsyncSwitch && comments.find( "!async" ) != std::string::npos )
 	{
 		mIsAsyncFunc = true;
 		mParser->_addAsyncFunc( this );

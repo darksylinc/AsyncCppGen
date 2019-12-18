@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -10,7 +11,9 @@ typedef struct CXTranslationUnitImpl *CXTranslationUnit;
 struct CXUnsavedFile;
 
 class ClangCursor;
+
 typedef std::vector<ClangCursor *> ClangCursorPtrVec;
+typedef std::map<std::string, ClangCursorPtrVec> ClangCursorPtrVecMap;
 
 class ClangParser
 {
@@ -28,11 +31,17 @@ class ClangParser
 	std::vector<UnsavedFile> mUnsavedFiles;
 
 	ClangCursorPtrVec mAsyncFuncs;
+	ClangCursorPtrVecMap mAsyncSwitchFuncs;
 
 	std::string mHeaderClassTemplate;
 	std::string mSourceClassTemplate;
 	std::string mFileBodySourceTemplate;
 	std::string mFileBodyHeaderTemplate;
+
+	std::string mSourceAsyncSwitchTemplateFuncBody;
+	std::string mSourceAsyncSwitchTemplateCaseBody;
+	std::string mSourceAsyncSwitchTemplateClassDecl;
+	std::string mHeaderAsyncSwitchTemplateClassDecl;
 
 	std::string mCustomNamespace;
 	std::string mCustomMacroPrefix;
@@ -62,6 +71,11 @@ protected:
 	/// Formats a particular async function
 	void processAsyncFunc( ClangCursor *cursorFunc, std::string &bodyHeader, std::string &bodyCpp );
 
+	/// Formats a particular async switch function
+	void processAsyncSwitchFunc( ClangCursor *cursorFunc, const std::string &className,
+								 size_t internalIdx, std::string &bodyHeader, std::string &bodyCpp,
+								 std::string &switchBodyCpp );
+
 public:
 	ClangParser();
 	~ClangParser();
@@ -69,6 +83,12 @@ public:
 	int init( const char *pathToFileToParse, const std::vector<std::string> &includeFolders );
 
 	void _addAsyncFunc( ClangCursor *cursorFunc );
+	void _addAsyncSwitchFunc( ClangCursor *cursorFunc, const std::string &className );
+
+	void setSettings( const std::string &namespaceValue, const std::string &macroPrefix,
+					  const std::string &outputHeaderFullpath, const std::string &outputSourceFullpath,
+					  const std::vector<std::string> &extraIncludesHeader,
+					  const std::vector<std::string> &extraIncludesSource );
 
 	void setSettings( const std::string &namespaceValue, const std::string &macroPrefix,
 					  const std::string &outputHeaderFullpath, const std::string &outputSourceFullpath,

@@ -26,5 +26,13 @@ namespace {1}
 		virtual void run() = 0;
 	}};
 
+	struct AsyncSwitchBaseClass
+	{{
+		uint32_t internalIdx;
+
+		AsyncSwitchBaseClass( uint32_t _internalIdx ) : internalIdx( _internalIdx ) {{}}
+		virtual ~AsyncSwitchBaseClass();
+	}};
+
 	{2}
 }}

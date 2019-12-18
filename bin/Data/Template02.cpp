@@ -8,5 +8,8 @@ namespace {1}
 	AsyncBaseClass::AsyncBaseClass() : mDeleteAfterRun( true ), mIsDone( false ) {{}}
 	AsyncBaseClass::~AsyncBaseClass() {{}}
 
+	AsyncSwitchBaseClass::AsyncSwitchBaseClass( uint32_t _internalIdx ) : internalIdx( _internalIdx ) {{}}
+	AsyncSwitchBaseClass::~AsyncSwitchBaseClass() {{}}
+
 	{2}
 }}
