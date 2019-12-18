@@ -143,9 +143,13 @@ void ClangParser::_addAsyncFunc( ClangCursor *cursorFunc )
 	mAsyncFuncs.push_back( cursorFunc );
 }
 //-------------------------------------------------------------------------
-void ClangParser::_addAsyncSwitchFunc( ClangCursor *cursorFunc, const std::string &className )
+void ClangParser::_addAsyncSwitchFunc( ClangCursor *cursorFunc, const std::string &className,
+									   const std::string &memberVarName )
 {
-	mAsyncSwitchFuncs[className].push_back( cursorFunc );
+	SwitchAsyncFunc asyncFunc;
+	asyncFunc.memberVariableName = memberVarName;
+	asyncFunc.cursor = cursorFunc;
+	mAsyncSwitchFuncs[className].push_back( asyncFunc );
 }
 //-------------------------------------------------------------------------
 void ClangParser::setSettings( const std::string &namespaceValue, const std::string &macroPrefix,
@@ -202,19 +206,19 @@ void ClangParser::processAsyncFuncs()
 
 	{
 		size_t internalIdx = 0u;
-		ClangCursorPtrVecMap::const_iterator itMap = mAsyncSwitchFuncs.begin();
-		ClangCursorPtrVecMap::const_iterator enMap = mAsyncSwitchFuncs.end();
+		SwitchAsyncFuncVecMap::const_iterator itMap = mAsyncSwitchFuncs.begin();
+		SwitchAsyncFuncVecMap::const_iterator enMap = mAsyncSwitchFuncs.end();
 
 		while( itMap != enMap )
 		{
 			std::string switchBodyCpp;
 
-			ClangCursorPtrVec::const_iterator itor = itMap->second.begin();
-			ClangCursorPtrVec::const_iterator endt = itMap->second.end();
+			SwitchAsyncFuncVec::const_iterator itor = itMap->second.begin();
+			SwitchAsyncFuncVec::const_iterator endt = itMap->second.end();
 			while( itor != endt )
 			{
-				processAsyncSwitchFunc( *itor, itMap->first, internalIdx, bodyHeader, bodyCpp,
-										switchBodyCpp );
+				processAsyncSwitchFunc( itor->cursor, itMap->first, itor->memberVariableName,
+										internalIdx, bodyHeader, bodyCpp, switchBodyCpp );
 				++internalIdx;
 				++itor;
 			}
@@ -311,8 +315,9 @@ void ClangParser::processAsyncFunc( ClangCursor *cursorFunc, std::string &bodyHe
 }
 //-------------------------------------------------------------------------
 void ClangParser::processAsyncSwitchFunc( ClangCursor *cursorFunc, const std::string &className,
-										  size_t internalIdx, std::string &bodyHeader,
-										  std::string &bodyCpp, std::string &switchBodyCpp )
+										  const std::string &memberVarName, size_t internalIdx,
+										  std::string &bodyHeader, std::string &bodyCpp,
+										  std::string &switchBodyCpp )
 {
 	std::string derivedClassName = cursorFunc->getParent()->getStr();
 	std::string funcName = cursorFunc->getStr();
@@ -368,7 +373,7 @@ void ClangParser::processAsyncSwitchFunc( ClangCursor *cursorFunc, const std::st
 		varFuncCall.pop_back();
 	}
 
-	switchBodyCpp += fmt::format( mSourceAsyncSwitchTemplateCaseBody, internalIdx, derivedClassName,
+	switchBodyCpp += fmt::format( mSourceAsyncSwitchTemplateCaseBody, internalIdx, memberVarName,
 								  funcName, varFuncCall );
 
 	bodyCpp += fmt::format( mSourceAsyncSwitchTemplateClassDecl, derivedClassName, funcName, varFuncDecl,

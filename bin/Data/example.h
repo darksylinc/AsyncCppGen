@@ -12,8 +12,8 @@ namespace Example
 		/// !async
 		void myFunc2( std::vector<int> myVec, const std::string &b );
 
-		/// !async_switch MasterClassName
-		/// !async_switch MasterClassName2
+		/// !async_switch MasterClassName mMemberVariable0
+		/// !async_switch MasterClassName2 mMemberVariable1
 		void myFunc3( std::vector<int> myVec, const std::string &b );
 	};
 }  // namespace Example

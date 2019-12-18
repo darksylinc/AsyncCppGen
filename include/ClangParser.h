@@ -12,8 +12,16 @@ struct CXUnsavedFile;
 
 class ClangCursor;
 
+struct SwitchAsyncFunc
+{
+	std::string memberVariableName;
+	ClangCursor *cursor;
+};
+
 typedef std::vector<ClangCursor *> ClangCursorPtrVec;
-typedef std::map<std::string, ClangCursorPtrVec> ClangCursorPtrVecMap;
+
+typedef std::vector<SwitchAsyncFunc> SwitchAsyncFuncVec;
+typedef std::map<std::string, SwitchAsyncFuncVec> SwitchAsyncFuncVecMap;
 
 class ClangParser
 {
@@ -31,7 +39,7 @@ class ClangParser
 	std::vector<UnsavedFile> mUnsavedFiles;
 
 	ClangCursorPtrVec mAsyncFuncs;
-	ClangCursorPtrVecMap mAsyncSwitchFuncs;
+	SwitchAsyncFuncVecMap mAsyncSwitchFuncs;
 
 	std::string mHeaderClassTemplate;
 	std::string mSourceClassTemplate;
@@ -73,7 +81,8 @@ protected:
 
 	/// Formats a particular async switch function
 	void processAsyncSwitchFunc( ClangCursor *cursorFunc, const std::string &className,
-								 size_t internalIdx, std::string &bodyHeader, std::string &bodyCpp,
+								 const std::string &memberVarName, size_t internalIdx,
+								 std::string &bodyHeader, std::string &bodyCpp,
 								 std::string &switchBodyCpp );
 
 public:
@@ -83,7 +92,8 @@ public:
 	int init( const char *pathToFileToParse, const std::vector<std::string> &includeFolders );
 
 	void _addAsyncFunc( ClangCursor *cursorFunc );
-	void _addAsyncSwitchFunc( ClangCursor *cursorFunc, const std::string &className );
+	void _addAsyncSwitchFunc( ClangCursor *cursorFunc, const std::string &className,
+							  const std::string &memberVarName );
 
 	void setSettings( const std::string &namespaceValue, const std::string &macroPrefix,
 					  const std::string &outputHeaderFullpath, const std::string &outputSourceFullpath,
