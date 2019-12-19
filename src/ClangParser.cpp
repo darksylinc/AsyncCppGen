@@ -404,6 +404,6 @@ void ClangParser::processAsyncSwitchFunc( ClangCursor *cursorFunc, const std::st
 	bodyCpp += fmt::format( mSourceAsyncSwitchTemplateClassDecl, derivedClassName, funcName, varFuncDecl,
 							internalIdx, sourceFuncCopy );
 
-	bodyHeader += fmt::format( mHeaderAsyncSwitchTemplateClassDecl, className, funcName, headerVarDecl,
-							   varFuncDecl, mCustomMacroPrefix );
+	bodyHeader += fmt::format( mHeaderAsyncSwitchTemplateClassDecl, derivedClassName, funcName,
+							   headerVarDecl, varFuncDecl, mCustomMacroPrefix );
 }
