@@ -77,6 +77,17 @@ void ClangCursor::evaluate()
 		mIsAsyncFunc = true;
 		mParser->_addAsyncFunc( this );
 	}
+
+	const size_t luaGfxBridgeLength = sizeof( "!lua_gfx_bridge" ) - 1u;
+	pos = comments.find( "!lua_gfx_bridge" );
+	if( pos != std::string::npos )
+	{
+		const size_t prefixNameStart = pos + luaGfxBridgeLength + 1u;
+		const size_t prefixNameEnd = comments.find_first_of( " ", prefixNameStart );
+
+		std::string prefixName = comments.substr( prefixNameStart, prefixNameEnd - prefixNameStart );
+		mParser->_addLuaGfxBridge( this, prefixName );
+	}
 }
 //-------------------------------------------------------------------------
 void ClangCursor::_addChild( CXCursor cursor, CXCursor parent )

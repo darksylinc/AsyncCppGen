@@ -40,6 +40,7 @@ class ClangParser
 
 	ClangCursorPtrVec mAsyncFuncs;
 	SwitchAsyncFuncVecMap mAsyncSwitchFuncs;
+	SwitchAsyncFuncVec mLuaGfxBridgeFuncs;
 
 	std::string mHeaderClassTemplate;
 	std::string mSourceClassTemplate;
@@ -51,6 +52,9 @@ class ClangParser
 	std::string mSourceAsyncSwitchTemplateClassDecl;
 	std::string mHeaderAsyncSwitchTemplateClassDecl;
 
+	std::string mSourceLuaBridgeSwitchTemplateClassDecl;
+	std::string mHeaderLuaBridgeSwitchTemplateClassDecl;
+
 	std::string mCustomNamespace;
 	std::string mCustomMacroPrefix;
 	std::string mCustomIncludeHeader;
@@ -58,6 +62,7 @@ class ClangParser
 
 	std::string mOutputHeaderFullpath;
 	std::string mOutputSourceFullpath;
+	std::string mOutputLuaGfxBridgeHeaderFullpath;
 
 	std::vector<CXUnsavedFile> getCXUnsavedFiles() const;
 
@@ -85,6 +90,11 @@ protected:
 								 std::string &bodyHeader, std::string &bodyCpp,
 								 std::string &switchBodyCpp );
 
+	/// Formats a particular lua bridge function
+	void processBridgeFunction( ClangCursor *cursorFunc, const std::string &prefixName,
+								const std::string &bridgeClassName, std::string &bodyHeader,
+								std::string &bodyCpp );
+
 public:
 	ClangParser();
 	~ClangParser();
@@ -95,9 +105,11 @@ public:
 	void _addAsyncFunc( ClangCursor *cursorFunc );
 	void _addAsyncSwitchFunc( ClangCursor *cursorFunc, const std::string &className,
 							  const std::string &memberVarName );
+	void _addLuaGfxBridge( ClangCursor *cursorFunc, const std::string &prefixName );
 
 	void setSettings( const std::string &namespaceValue, const std::string &macroPrefix,
 					  const std::string &outputHeaderFullpath, const std::string &outputSourceFullpath,
+					  const std::string &outputLuaGfxBridgeHeaderFullpath,
 					  const std::vector<std::string> &extraIncludesHeader,
 					  const std::vector<std::string> &extraIncludesSource );
 

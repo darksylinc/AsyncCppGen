@@ -66,10 +66,11 @@ int main( int argn, char *argv[] )
 	getValuesFromIni( iniContent, "extra_include_header", extraIncludesHeader );
 	std::vector<std::string> extraIncludesSource;
 	getValuesFromIni( iniContent, "extra_include_source", extraIncludesSource );
-	parser.setSettings( getValueFromIni( iniContent, "namespace" ),      //
-						getValueFromIni( iniContent, "macro_prefix" ),   //
-						getValueFromIni( iniContent, "output_header" ),  //
-						getValueFromIni( iniContent, "output_source" ),  //
+	parser.setSettings( getValueFromIni( iniContent, "namespace" ),                     //
+						getValueFromIni( iniContent, "macro_prefix" ),                  //
+						getValueFromIni( iniContent, "output_header" ),                 //
+						getValueFromIni( iniContent, "output_source" ),                 //
+						getValueFromIni( iniContent, "output_header_lua_gfx_bridge" ),  //
 						extraIncludesHeader, extraIncludesSource );
 
 	std::vector<std::string> includeFolders;
