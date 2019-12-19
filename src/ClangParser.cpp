@@ -384,7 +384,7 @@ void ClangParser::processAsyncSwitchFunc( ClangCursor *cursorFunc, const std::st
 		headerVarDecl	+= typeDecl + " " + varName + ";\n";
 		varFuncDecl		+= ", " + typeArgDecl + " _" + varName;
 		sourceFuncCopy	+= ",\n" + varName + "( _" + varName + " )";
-		varFuncCall		+= varNameFuncCall + ", ";
+		varFuncCall		+= "derived->" + varNameFuncCall + ", ";
 		// clang-format on
 		++itor;
 	}
@@ -398,8 +398,8 @@ void ClangParser::processAsyncSwitchFunc( ClangCursor *cursorFunc, const std::st
 	if( !varFuncDecl.empty() )
 		varFuncDecl.erase( 0u, 2u );
 
-	switchBodyCpp += fmt::format( mSourceAsyncSwitchTemplateCaseBody, internalIdx, memberVarName,
-								  funcName, varFuncCall );
+	switchBodyCpp += fmt::format( mSourceAsyncSwitchTemplateCaseBody, internalIdx, derivedClassName,
+								  memberVarName, funcName, varFuncCall );
 
 	bodyCpp += fmt::format( mSourceAsyncSwitchTemplateClassDecl, derivedClassName, funcName, varFuncDecl,
 							internalIdx, sourceFuncCopy );
