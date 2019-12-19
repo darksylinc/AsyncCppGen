@@ -75,7 +75,9 @@ int main( int argn, char *argv[] )
 	std::vector<std::string> includeFolders;
 	getValuesFromIni( iniContent, "compiler_arg", includeFolders );
 
-	int result = parser.init( getValueFromIni( iniContent, "file_to_parse" ).c_str(), includeFolders );
+	std::vector<std::string> filesToParse;
+	getValuesFromIni( iniContent, "file_to_parse", filesToParse );
+	int result = parser.init( filesToParse, includeFolders );
 	if( result )
 		return result;
 

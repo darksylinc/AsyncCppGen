@@ -12,8 +12,6 @@
 
 ClangParser::ClangParser() :
 	mIndex( 0 ),
-	mUnit( 0 ),
-	mRoot( 0 ),
 	mCustomNamespace( "Vidya" ),
 	mCustomMacroPrefix( "vidya_" ),
 	mCustomIncludeHeader( "#include \"VidyaPrerequisites.h\"" )
@@ -22,14 +20,24 @@ ClangParser::ClangParser() :
 //-------------------------------------------------------------------------
 ClangParser::~ClangParser()
 {
-	delete mRoot;
-	mRoot = 0;
-
-	if( mUnit )
 	{
-		clang_disposeTranslationUnit( mUnit );
-		mUnit = 0;
+		std::vector<ClangCursor *>::const_iterator itor = mRoots.begin();
+		std::vector<ClangCursor *>::const_iterator endt = mRoots.end();
+
+		while( itor != endt )
+			delete *itor++;
+		mRoots.clear();
 	}
+
+	{
+		std::vector<CXTranslationUnit>::const_iterator itor = mUnits.begin();
+		std::vector<CXTranslationUnit>::const_iterator endt = mUnits.end();
+
+		while( itor != endt )
+			clang_disposeTranslationUnit( *itor++ );
+		mUnits.clear();
+	}
+
 	if( mIndex )
 	{
 		clang_disposeIndex( mIndex );
@@ -94,7 +102,8 @@ std::vector<CXUnsavedFile> ClangParser::getCXUnsavedFiles() const
 	return retVal;
 }
 //-------------------------------------------------------------------------
-int ClangParser::init( const char *pathToFileToParse, const std::vector<std::string> &includeFolders )
+int ClangParser::init( const std::vector<std::string> &pathToFilesToParse,
+					   const std::vector<std::string> &includeFolders )
 {
 	// Provide a path to a fake std lib implementation to avoid cluttering std vector & string
 	std::vector<const char *> compilerArgs;
@@ -120,20 +129,33 @@ int ClangParser::init( const char *pathToFileToParse, const std::vector<std::str
 	//	std::vector<CXUnsavedFile> unsavedFiles = getCXUnsavedFiles();
 
 	mIndex = clang_createIndex( 0, true );
-	mUnit = clang_parseTranslationUnit(
-		mIndex, pathToFileToParse, &compilerArgs[0], static_cast<int>( compilerArgs.size() ), 0, 0,
-		CXTranslationUnit_None | CXTranslationUnit_IncludeBriefCommentsInCodeCompletion );
 
-	if( !mUnit )
+	std::vector<std::string>::const_iterator itor = pathToFilesToParse.begin();
+	std::vector<std::string>::const_iterator endt = pathToFilesToParse.end();
+
+	while( itor != endt )
 	{
-		printf( "Unable to parse translation unit. Quitting.\n" );
-		return -1;
+		printf( "Parsing %s ...\n", itor->c_str() );
+
+		CXTranslationUnit unit = clang_parseTranslationUnit(
+			mIndex, itor->c_str(), &compilerArgs[0], static_cast<int>( compilerArgs.size() ), 0, 0,
+			CXTranslationUnit_None | CXTranslationUnit_IncludeBriefCommentsInCodeCompletion );
+
+		if( !unit )
+		{
+			printf( "Unable to parse translation unit. Quitting.\n" );
+			return -1;
+		}
+
+		mUnits.push_back( unit );
+
+		CXCursor cursor = clang_getTranslationUnitCursor( unit );
+
+		mRoots.push_back( new ClangCursor( cursor, 0, this ) );
+		mRoots.back()->init();
+
+		++itor;
 	}
-
-	CXCursor cursor = clang_getTranslationUnitCursor( mUnit );
-
-	mRoot = new ClangCursor( cursor, 0, this );
-	mRoot->init();
 
 	return 0;
 }

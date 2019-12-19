@@ -32,9 +32,9 @@ class ClangParser
 	};
 
 	CXIndex mIndex;
-	CXTranslationUnit mUnit;
 
-	ClangCursor *mRoot;
+	std::vector<CXTranslationUnit> mUnits;
+	std::vector<ClangCursor *> mRoots;
 
 	std::vector<UnsavedFile> mUnsavedFiles;
 
@@ -89,7 +89,8 @@ public:
 	ClangParser();
 	~ClangParser();
 
-	int init( const char *pathToFileToParse, const std::vector<std::string> &includeFolders );
+	int init( const std::vector<std::string> &pathToFilesToParse,
+			  const std::vector<std::string> &includeFolders );
 
 	void _addAsyncFunc( ClangCursor *cursorFunc );
 	void _addAsyncSwitchFunc( ClangCursor *cursorFunc, const std::string &className,
