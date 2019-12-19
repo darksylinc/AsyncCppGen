@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <fstream>
 
+#include <unordered_map>
+
 ClangParser::ClangParser() :
 	mIndex( 0 ),
 	mCustomNamespace( "Vidya" ),
@@ -228,6 +230,7 @@ void ClangParser::processAsyncFuncs()
 
 	{
 		size_t internalIdx = 0u;
+		std::unordered_map<ClangCursor *, size_t> internalIndices;
 		SwitchAsyncFuncVecMap::const_iterator itMap = mAsyncSwitchFuncs.begin();
 		SwitchAsyncFuncVecMap::const_iterator enMap = mAsyncSwitchFuncs.end();
 
@@ -239,9 +242,16 @@ void ClangParser::processAsyncFuncs()
 			SwitchAsyncFuncVec::const_iterator endt = itMap->second.end();
 			while( itor != endt )
 			{
-				processAsyncSwitchFunc( itor->cursor, itMap->first, itor->memberVariableName,
-										internalIdx, bodyHeader, bodyCpp, switchBodyCpp );
-				++internalIdx;
+				size_t funcIdx = internalIdx;
+				std::unordered_map<ClangCursor *, size_t>::const_iterator itIdx =
+					internalIndices.find( itor->cursor );
+				if( itIdx == internalIndices.end() )
+					internalIndices[itor->cursor] = internalIdx++;
+				else
+					funcIdx = itIdx->second;
+
+				processAsyncSwitchFunc( itor->cursor, itMap->first, itor->memberVariableName, funcIdx,
+										bodyHeader, bodyCpp, switchBodyCpp );
 				++itor;
 			}
 
