@@ -395,6 +395,9 @@ void ClangParser::processAsyncSwitchFunc( ClangCursor *cursorFunc, const std::st
 		varFuncCall.pop_back();
 	}
 
+	if( !varFuncDecl.empty() )
+		varFuncDecl.erase( 0u, 2u );
+
 	switchBodyCpp += fmt::format( mSourceAsyncSwitchTemplateCaseBody, internalIdx, memberVarName,
 								  funcName, varFuncCall );
 
