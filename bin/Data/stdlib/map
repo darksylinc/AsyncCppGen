@@ -1,0 +1,13 @@
+
+#ifndef stdlib_map
+#define stdlib_map
+
+namespace std
+{
+	template <typename _Key, typename _Value>
+	class map
+	{
+	};
+}  // namespace std
+
+#endif

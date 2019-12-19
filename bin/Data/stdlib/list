@@ -1,11 +1,11 @@
 
-#ifndef stdlib_vector
-#define stdlib_vector
+#ifndef stdlib_list
+#define stdlib_list
 
 namespace std
 {
 	template <typename T>
-	class vector
+	class list
 	{
 	};
 }  // namespace std

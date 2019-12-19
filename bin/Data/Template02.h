@@ -30,7 +30,7 @@ namespace {1}
 	{{
 		uint32_t internalIdx;
 
-		AsyncSwitchBaseClass( uint32_t _internalIdx ) : internalIdx( _internalIdx ) {{}}
+		AsyncSwitchBaseClass( uint32_t _internalIdx );
 		virtual ~AsyncSwitchBaseClass();
 	}};
 

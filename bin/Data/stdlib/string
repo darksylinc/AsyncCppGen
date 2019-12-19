@@ -1,6 +1,12 @@
+
+#ifndef stdlib_string
+#define stdlib_string
+
 namespace std
 {
 	class string
 	{
 	};
 }  // namespace std
+
+#endif
