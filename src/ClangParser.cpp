@@ -477,8 +477,24 @@ void ClangParser::processBridgeFunction( ClangCursor *cursorFunc, const std::str
 			typeDecl = child.getTypeStr();
 			varName = child.getStr();
 
-			varFuncDecl += typeDecl + " " + varName + ", ";
-			varFuncCall += varName + ", ";
+			if( typeDecl.find( "Ogre::Vector3" ) != std::string::npos )
+			{
+				varFuncDecl +=
+					"float " + varName + "X, float " + varName + "Y, float " + varName + "Z, ";
+				varFuncCall += "Ogre::Vector3( " + varName + "X, " + varName + "Y, " + varName + "Z ), ";
+			}
+			else if( typeDecl.find( "Ogre::Quaternion" ) != std::string::npos )
+			{
+				varFuncDecl += "float " + varName + "X, float " + varName + "Y, float " + varName +
+							   "Z, float " + varName + "W, ";
+				varFuncCall += "Ogre::Quaternion( " + varName + "X, " + varName + "Y, " + varName +
+							   "Z, " + varName + "W ), ";
+			}
+			else
+			{
+				varFuncDecl += typeDecl + " " + varName + ", ";
+				varFuncCall += varName + ", ";
+			}
 		}
 		++itor;
 	}

@@ -14,6 +14,6 @@ namespace Example
 		/// !async_switch MasterClassName mMemberVariable2
 		/// !async_switch MasterClassName2 mMemberVariable3
 		/// !lua_gfx_bridge camera
-		iint otherFunc2( std::vector<int> myVec, const std::string &b ) { return m_value; }
+		int otherFunc2( std::vector<int> myVec, const std::string &b ) { return m_value; }
 	};
 }  // namespace Example
