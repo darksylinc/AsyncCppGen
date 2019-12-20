@@ -85,7 +85,9 @@ void ClangCursor::evaluate()
 		const size_t prefixNameStart = pos + luaGfxBridgeLength + 1u;
 		const size_t prefixNameEnd = comments.find_first_of( " ", prefixNameStart );
 
-		std::string prefixName = comments.substr( prefixNameStart, prefixNameEnd - prefixNameStart );
+		std::string prefixName;
+		if( prefixNameEnd != std::string::npos )
+			prefixName = comments.substr( prefixNameStart, prefixNameEnd - prefixNameStart );
 		mParser->_addLuaGfxBridge( this, prefixName );
 	}
 }

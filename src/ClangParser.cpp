@@ -512,7 +512,7 @@ void ClangParser::processBridgeFunction( ClangCursor *cursorFunc, const std::str
 	}
 
 	std::string funcNameUpperCase = funcName;
-	if( !funcNameUpperCase.empty() )
+	if( !funcNameUpperCase.empty() && !prefixName.empty() )
 		funcNameUpperCase[0] = (char)std::toupper( funcNameUpperCase[0] );
 
 	bodyCpp += fmt::format( mSourceLuaBridgeSwitchTemplateClassDecl, bridgeClassName, prefixName,
