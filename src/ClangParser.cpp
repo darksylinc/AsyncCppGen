@@ -335,30 +335,33 @@ void ClangParser::processAsyncFunc( ClangCursor *cursorFunc, std::string &bodyHe
 	while( itor != endt )
 	{
 		const ClangCursor &child = *itor;
-		std::string typeDecl = child.getTypeStr();
-		std::string typeArgDecl = typeDecl;
-		std::string varName = child.getStr();
-		std::string varNameFuncCall = varName;
-
-		if( typeDecl.back() == '&' )
+		if( child.getTypeKind() != CXType_Invalid )
 		{
-			// Convert references into hard copies
-			typeDecl.pop_back();
-		}
-		else if( typeDecl == "const char *" )
-		{
-			// Convert string pointers into hard copies
-			typeDecl = "std::string";
-			typeArgDecl = "const char *";
-			varNameFuncCall += ".c_str()";
-		}
+			std::string typeDecl = child.getTypeStr();
+			std::string typeArgDecl = typeDecl;
+			std::string varName = child.getStr();
+			std::string varNameFuncCall = varName;
 
-		// clang-format off
-		headerVarDecl	+= typeDecl + " " + varName + ";\n";
-		varFuncDecl		+= ", " + typeArgDecl + " _" + varName;
-		sourceFuncCopy	+= ",\n" + varName + "( _" + varName + " )";
-		varFuncCall		+= varNameFuncCall + ", ";
-		// clang-format on
+			if( typeDecl.back() == '&' )
+			{
+				// Convert references into hard copies
+				typeDecl.pop_back();
+			}
+			else if( typeDecl == "const char *" )
+			{
+				// Convert string pointers into hard copies
+				typeDecl = "std::string";
+				typeArgDecl = "const char *";
+				varNameFuncCall += ".c_str()";
+			}
+
+			// clang-format off
+			headerVarDecl	+= typeDecl + " " + varName + ";\n";
+			varFuncDecl		+= ", " + typeArgDecl + " _" + varName;
+			sourceFuncCopy	+= ",\n" + varName + "( _" + varName + " )";
+			varFuncCall		+= varNameFuncCall + ", ";
+			// clang-format on
+		}
 		++itor;
 	}
 
@@ -397,30 +400,33 @@ void ClangParser::processAsyncSwitchFunc( ClangCursor *cursorFunc, const std::st
 	while( itor != endt )
 	{
 		const ClangCursor &child = *itor;
-		std::string typeDecl = child.getTypeStr();
-		std::string typeArgDecl = typeDecl;
-		std::string varName = child.getStr();
-		std::string varNameFuncCall = varName;
-
-		if( typeDecl.back() == '&' )
+		if( child.getTypeKind() != CXType_Invalid )
 		{
-			// Convert references into hard copies
-			typeDecl.pop_back();
-		}
-		else if( typeDecl == "const char *" )
-		{
-			// Convert string pointers into hard copies
-			typeDecl = "std::string";
-			typeArgDecl = "const char *";
-			varNameFuncCall += ".c_str()";
-		}
+			std::string typeDecl = child.getTypeStr();
+			std::string typeArgDecl = typeDecl;
+			std::string varName = child.getStr();
+			std::string varNameFuncCall = varName;
 
-		// clang-format off
-		headerVarDecl	+= typeDecl + " " + varName + ";\n";
-		varFuncDecl		+= ", " + typeArgDecl + " _" + varName;
-		sourceFuncCopy	+= ",\n" + varName + "( _" + varName + " )";
-		varFuncCall		+= "derived->" + varNameFuncCall + ", ";
-		// clang-format on
+			if( typeDecl.back() == '&' )
+			{
+				// Convert references into hard copies
+				typeDecl.pop_back();
+			}
+			else if( typeDecl == "const char *" )
+			{
+				// Convert string pointers into hard copies
+				typeDecl = "std::string";
+				typeArgDecl = "const char *";
+				varNameFuncCall += ".c_str()";
+			}
+
+			// clang-format off
+			headerVarDecl	+= typeDecl + " " + varName + ";\n";
+			varFuncDecl		+= ", " + typeArgDecl + " _" + varName;
+			sourceFuncCopy	+= ",\n" + varName + "( _" + varName + " )";
+			varFuncCall		+= "derived->" + varNameFuncCall + ", ";
+			// clang-format on
+		}
 		++itor;
 	}
 
@@ -464,13 +470,16 @@ void ClangParser::processBridgeFunction( ClangCursor *cursorFunc, const std::str
 	while( itor != endt )
 	{
 		const ClangCursor &child = *itor;
-		typeDecl.clear();
-		varName.clear();
-		typeDecl = child.getTypeStr();
-		varName = child.getStr();
+		if( child.getTypeKind() != CXType_Invalid )
+		{
+			typeDecl.clear();
+			varName.clear();
+			typeDecl = child.getTypeStr();
+			varName = child.getStr();
 
-		varFuncDecl += typeDecl + " " + varName + ", ";
-		varFuncCall += varName + ", ";
+			varFuncDecl += typeDecl + " " + varName + ", ";
+			varFuncCall += varName + ", ";
+		}
 		++itor;
 	}
 
