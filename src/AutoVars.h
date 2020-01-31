@@ -36,7 +36,7 @@ class AutoVars
 public:
 	AutoVars( ClangParser *clangParser );
 
-	void addAutoVar( const std::string &comment, size_t pos, ClangCursor *cursor );
+	void addStaticVar( const std::string &comment, size_t pos, ClangCursor *cursor );
 
 	void setSettings( const std::string &outputSourceFullpath,
 					  const std::vector<std::string> &extraIncludesSource );

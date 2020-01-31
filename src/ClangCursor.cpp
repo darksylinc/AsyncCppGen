@@ -80,12 +80,12 @@ void ClangCursor::evaluate()
 		mParser->_addAsyncFunc( this );
 	}
 
-	pos = comments.find( "!auto_vars" );
+	pos = comments.find( "!static_var" );
 	if( pos != std::string::npos )
 	{
-		pos += sizeof( "!auto_vars" ) - 1u;
+		pos += sizeof( "!static_var" ) - 1u;
 		AutoVars *autoVars = mParser->getAutoVars();
-		autoVars->addAutoVar( comments, pos, this );
+		autoVars->addStaticVar( comments, pos, this );
 	}
 
 	const size_t luaGfxBridgeLength = sizeof( "!lua_gfx_bridge" ) - 1u;

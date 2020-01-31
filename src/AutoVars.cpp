@@ -34,7 +34,7 @@ size_t AutoVars::extractParam( const std::string &comment, size_t pos, std::stri
 	return static_cast<size_t>( itor - comment.begin() );
 }
 //-------------------------------------------------------------------------
-void AutoVars::addAutoVar( const std::string &comment, size_t pos, ClangCursor *cursor )
+void AutoVars::addStaticVar( const std::string &comment, size_t pos, ClangCursor *cursor )
 {
 	AutoVarEntry entry;
 	pos = extractParam( comment, pos, entry.defaultValue );

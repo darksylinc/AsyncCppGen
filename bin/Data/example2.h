@@ -6,10 +6,10 @@ namespace Example
 {
 	class AnotherClass
 	{
-		/// !auto_vars 78
+		/// !static_var 78
 		int m_value;
 
-		/// !auto_vars 1.0f -1.0f 5.0f
+		/// !static_var 1.0f -1.0f 5.0f
 		float m_autoVarTest;
 
 		/// !async
