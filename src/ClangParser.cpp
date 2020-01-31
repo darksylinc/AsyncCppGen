@@ -1,6 +1,7 @@
 
 #include "ClangParser.h"
 
+#include "AutoVars.h"
 #include "ClangCursor.h"
 
 #include "clang-c/Index.h"
@@ -16,12 +17,16 @@ ClangParser::ClangParser() :
 	mIndex( 0 ),
 	mCustomNamespace( "Vidya" ),
 	mCustomMacroPrefix( "vidya_" ),
-	mCustomIncludeHeader( "#include \"VidyaPrerequisites.h\"" )
+	mCustomIncludeHeader( "#include \"VidyaPrerequisites.h\"" ),
+	mAutoVars( new AutoVars( this ) )
 {
 }
 //-------------------------------------------------------------------------
 ClangParser::~ClangParser()
 {
+	delete mAutoVars;
+	mAutoVars = 0;
+
 	{
 		std::vector<ClangCursor *>::const_iterator itor = mRoots.begin();
 		std::vector<ClangCursor *>::const_iterator endt = mRoots.end();

@@ -3,6 +3,8 @@
 
 #include "ClangParser.h"
 
+#include "AutoVars.h"
+
 #include <assert.h>
 #include <stdio.h>
 
@@ -76,6 +78,14 @@ void ClangCursor::evaluate()
 	{
 		mIsAsyncFunc = true;
 		mParser->_addAsyncFunc( this );
+	}
+
+	pos = comments.find( "!auto_vars" );
+	if( pos != std::string::npos )
+	{
+		pos += sizeof( "!auto_vars" ) - 1u;
+		AutoVars *autoVars = mParser->getAutoVars();
+		autoVars->addAutoVar( comments, pos, this );
 	}
 
 	const size_t luaGfxBridgeLength = sizeof( "!lua_gfx_bridge" ) - 1u;

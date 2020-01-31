@@ -23,6 +23,8 @@ typedef std::vector<ClangCursor *> ClangCursorPtrVec;
 typedef std::vector<SwitchAsyncFunc> SwitchAsyncFuncVec;
 typedef std::map<std::string, SwitchAsyncFuncVec> SwitchAsyncFuncVecMap;
 
+class AutoVars;
+
 class ClangParser
 {
 	struct UnsavedFile
@@ -64,16 +66,18 @@ class ClangParser
 	std::string mOutputSourceFullpath;
 	std::string mOutputLuaGfxBridgeHeaderFullpath;
 
+	AutoVars *mAutoVars;
+
 	std::vector<CXUnsavedFile> getCXUnsavedFiles() const;
 
 public:
 	/// Loads the contents of 'filename' into outString
 	static void loadFile( const char *filename, std::string &outString );
 
-protected:
 	/// Saves the contents of text into 'filename'
 	static void saveFile( const char *filename, const std::string &text );
 
+protected:
 	void initUnsavedFiles( const char **filenames, size_t numFilenames );
 	static void initUnsavedFile( const char *filename, UnsavedFile &outUnsavedFile );
 
@@ -115,4 +119,8 @@ public:
 
 	/// Iterates all async functions, formats them and generates final output
 	void processAsyncFuncs();
+
+	const std::string &getCustomNamespace() const { return mCustomNamespace; }
+
+	AutoVars *getAutoVars() { return mAutoVars; }
 };

@@ -1,6 +1,8 @@
 
 #include "ClangParser.h"
 
+#include "AutoVars.h"
+
 #include "fmt/core.h"
 
 void printHelp()
@@ -73,6 +75,11 @@ int main( int argn, char *argv[] )
 						getValueFromIni( iniContent, "output_header_lua_gfx_bridge" ),  //
 						extraIncludesHeader, extraIncludesSource );
 
+	extraIncludesSource.clear();
+	getValuesFromIni( iniContent, "extra_include_source_auto_vars", extraIncludesSource );
+	parser.getAutoVars()->setSettings( getValueFromIni( iniContent, "output_source_auto_vars" ),
+									   extraIncludesSource );
+
 	std::vector<std::string> includeFolders;
 	getValuesFromIni( iniContent, "compiler_arg", includeFolders );
 
@@ -83,6 +90,8 @@ int main( int argn, char *argv[] )
 		return result;
 
 	parser.processAsyncFuncs();
+
+	parser.getAutoVars()->processAutoVars();
 
 	return 0;
 }
