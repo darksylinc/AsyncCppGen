@@ -6,4 +6,10 @@
 namespace {1}
 {{
 	{2}
+
+	void DebugInterface::addGlobalFunctions()
+	{{
+		DebugInterface &debugInterface = DebugInterface::getSingleton();
+		{3}
+	}}
 }}

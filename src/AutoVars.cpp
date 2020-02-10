@@ -69,6 +69,7 @@ void AutoVars::processAutoVars()
 		return;
 
 	std::string autoVarsCpp;
+	std::string debugInterfaceCpp;
 
 	AutoVarEntryVec::const_iterator itor = mAutoVars.begin();
 	AutoVarEntryVec::const_iterator endt = mAutoVars.end();
@@ -82,11 +83,23 @@ void AutoVars::processAutoVars()
 
 		autoVarsCpp +=
 			fmt::format( "{0} {1}::{2} = {3};\n", varType, className, varName, itor->defaultValue );
+
+		if( itor->minValue.empty() || itor->maxValue.empty() )
+		{
+			debugInterfaceCpp +=
+				fmt::format( "debugInterface.addVar( \"{0}\", {1}::{0} );\n", varName, className );
+		}
+		else
+		{
+			debugInterfaceCpp += fmt::format( "debugInterface.addVar( \"{0}\", {1}::{0}, {2}, {3} );\n",
+											  varName, className, itor->minValue, itor->maxValue );
+		}
+
 		++itor;
 	}
 
 	autoVarsCpp = fmt::format( mSourceAutoVarsTemplate, mCustomIncludeSource,
-							   mClangParser->getCustomNamespace(), autoVarsCpp );
+							   mClangParser->getCustomNamespace(), autoVarsCpp, debugInterfaceCpp );
 
 	mClangParser->saveFile( mOutputSourceFullpath.c_str(), autoVarsCpp );
 }
