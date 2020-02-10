@@ -7,9 +7,8 @@ namespace {1}
 {{
 	{2}
 
-	void DebugInterface::addGlobalFunctions()
+	void DebugInterface::addGlobalFunctions( DebugInterface &debugInterface )
 	{{
-		DebugInterface &debugInterface = DebugInterface::getSingleton();
 		{3}
 	}}
 }}

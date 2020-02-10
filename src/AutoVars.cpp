@@ -39,9 +39,21 @@ void AutoVars::addStaticVar( const std::string &comment, size_t pos, ClangCursor
 	AutoVarEntry entry;
 	pos = extractParam( comment, pos, entry.defaultValue );
 	pos = extractParam( comment, pos, entry.minValue );
-	pos = extractParam( comment, pos, entry.maxValue );
-	pos = extractParam( comment, pos, entry.getter );
-	pos = extractParam( comment, pos, entry.setter );
+	if( !entry.minValue.empty() && entry.minValue.back() - '0' >= 0 && entry.minValue.back() - '0' <= 9 )
+	{
+		// !static_var default_value min max
+		pos = extractParam( comment, pos, entry.maxValue );
+	}
+	else
+	{
+		// !static_var default_value setter getter min max
+		entry.getter = entry.minValue;
+		entry.minValue.clear();
+		pos = extractParam( comment, pos, entry.setter );
+		pos = extractParam( comment, pos, entry.minValue );
+		pos = extractParam( comment, pos, entry.maxValue );
+	}
+
 	entry.cursor = cursor;
 	mAutoVars.push_back( entry );
 }
@@ -84,15 +96,34 @@ void AutoVars::processAutoVars()
 		autoVarsCpp +=
 			fmt::format( "{0} {1}::{2} = {3};\n", varType, className, varName, itor->defaultValue );
 
-		if( itor->minValue.empty() || itor->maxValue.empty() )
+		if( !itor->getter.empty() )
 		{
-			debugInterfaceCpp +=
-				fmt::format( "debugInterface.addVar( \"{0}\", {1}::{0} );\n", varName, className );
+			if( itor->minValue.empty() || itor->maxValue.empty() )
+			{
+				debugInterfaceCpp +=
+					fmt::format( "debugInterface.addVar( \"{0}\", {1}::{0}, {2}, {3} );\n", varName,
+								 className, itor->getter, itor->setter );
+			}
+			else
+			{
+				debugInterfaceCpp += fmt::format(
+					"debugInterface.addVar( \"{0}\", {1}::{0}, {2}, {3}, {4}, {5} );\n", varName,
+					className, itor->getter, itor->setter, itor->minValue, itor->maxValue );
+			}
 		}
 		else
 		{
-			debugInterfaceCpp += fmt::format( "debugInterface.addVar( \"{0}\", {1}::{0}, {2}, {3} );\n",
-											  varName, className, itor->minValue, itor->maxValue );
+			if( itor->minValue.empty() || itor->maxValue.empty() )
+			{
+				debugInterfaceCpp +=
+					fmt::format( "debugInterface.addVar( \"{0}\", {1}::{0} );\n", varName, className );
+			}
+			else
+			{
+				debugInterfaceCpp +=
+					fmt::format( "debugInterface.addVar( \"{0}\", {1}::{0}, {2}, {3} );\n", varName,
+								 className, itor->minValue, itor->maxValue );
+			}
 		}
 
 		++itor;
