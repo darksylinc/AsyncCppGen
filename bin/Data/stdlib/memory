@@ -1,0 +1,13 @@
+
+#ifndef stdlib_memory
+#define stdlib_memory
+
+namespace std
+{
+	template <typename T>
+	class shared_ptr
+	{
+	};
+}  // namespace std
+
+#endif
