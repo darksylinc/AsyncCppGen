@@ -7,6 +7,8 @@ namespace std
 	template <typename T>
 	class vector
 	{
+	public:
+		bool empty() const { return true; }
 	};
 }  // namespace std
 
