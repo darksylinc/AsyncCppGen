@@ -4,6 +4,11 @@
 
 namespace std
 {
+	template <typename _CharT /*, typename _Traits, typename _Alloc*/>
+	class basic_string
+	{
+	};
+
 	class string
 	{
 	};
