@@ -9,6 +9,10 @@ namespace std
 	{
 	public:
 		bool empty() const { return true; }
+
+		typedef T value_type;
+		typedef T *iterator;
+		typedef const T *const_iterator;
 	};
 }  // namespace std
 
