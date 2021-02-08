@@ -7,6 +7,11 @@ namespace std
 	template <typename T>
 	class shared_ptr
 	{
+	public:
+		shared_ptr();
+		shared_ptr( T * );
+
+		const T *get() const;
 	};
 }  // namespace std
 

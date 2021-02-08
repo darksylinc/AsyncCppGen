@@ -4,13 +4,21 @@
 
 namespace std
 {
-	template <typename _CharT /*, typename _Traits, typename _Alloc*/>
+	template <typename _CharT>
 	class basic_string
 	{
 	};
 
 	class string
 	{
+	public:
+		string();
+		string( const char * );
+
+		bool operator<( const std::string & ) const;
+		bool operator<( const char * ) const;
+
+		friend bool operator<( const char *lhs, const string &rhs );
 	};
 }  // namespace std
 
