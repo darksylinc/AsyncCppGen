@@ -13,6 +13,9 @@ namespace std
 		typedef T value_type;
 		typedef T *iterator;
 		typedef const T *const_iterator;
+
+		const_iterator begin() const;
+		const_iterator end() const;
 	};
 }  // namespace std
 
