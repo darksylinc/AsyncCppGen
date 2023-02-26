@@ -16,7 +16,7 @@
 ClangParser::ClangParser() :
 	mIndex( 0 ),
 	mCustomNamespace( "Vidya" ),
-	mCustomMacroPrefix( "vidya_" ),
+	// mCustomMacroPrefix( "vidya_" ),
 	mCustomIncludeHeader( "#include \"VidyaPrerequisites.h\"" ),
 	mAutoVars( new AutoVars( this ) )
 {
@@ -197,7 +197,7 @@ void ClangParser::setSettings( const std::string &namespaceValue, const std::str
 							   const std::vector<std::string> &extraIncludesSource )
 {
 	mCustomNamespace = namespaceValue;
-	mCustomMacroPrefix = macroPrefix;
+	// mCustomMacroPrefix = macroPrefix;
 	mOutputHeaderFullpath = outputHeaderFullpath;
 	mOutputSourceFullpath = outputSourceFullpath;
 	mOutputLuaGfxBridgeHeaderFullpath = outputLuaGfxBridgeHeaderFullpath;
@@ -376,8 +376,7 @@ void ClangParser::processAsyncFunc( ClangCursor *cursorFunc, std::string &bodyHe
 		varFuncCall.pop_back();
 	}
 
-	bodyHeader += fmt::format( mHeaderClassTemplate, className, funcName, headerVarDecl, varFuncDecl,
-							   mCustomMacroPrefix );
+	bodyHeader += fmt::format( mHeaderClassTemplate, className, funcName, headerVarDecl, varFuncDecl );
 	bodyCpp += fmt::format( mSourceClassTemplate, className, funcName,  // {0}, {1}
 							varFuncDecl,                                // {2}
 							sourceFuncCopy,                             // {3}
@@ -451,7 +450,7 @@ void ClangParser::processAsyncSwitchFunc( ClangCursor *cursorFunc, const std::st
 							internalIdx, sourceFuncCopy );
 
 	bodyHeader += fmt::format( mHeaderAsyncSwitchTemplateClassDecl, derivedClassName, funcName,
-							   headerVarDecl, varFuncDecl, mCustomMacroPrefix );
+							   headerVarDecl, varFuncDecl );
 }
 //-------------------------------------------------------------------------
 void ClangParser::processBridgeFunction( ClangCursor *cursorFunc, const std::string &prefixName,

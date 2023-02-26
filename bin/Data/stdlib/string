@@ -15,6 +15,9 @@ namespace std
 		string();
 		string( const char * );
 
+		bool empty() const;
+		void clear();
+
 		bool operator<( const std::string & ) const;
 		bool operator<( const char * ) const;
 
