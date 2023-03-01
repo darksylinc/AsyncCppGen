@@ -319,6 +319,7 @@ void ClangParser::loadTemplates()
 
 	loadFile( "../Data/LuaBridgeSwitch_Template01.cpp", mSourceLuaBridgeSwitchTemplateClassDecl );
 	loadFile( "../Data/LuaBridgeSwitch_Template01.h", mHeaderLuaBridgeSwitchTemplateClassDecl );
+	loadFile( "../Data/LuaBridgeSwitch_Template02.cpp", mSourceLuaBridgeSwitchNonPodTemplateClassDecl );
 }
 //-------------------------------------------------------------------------
 void ClangParser::processAsyncFunc( ClangCursor *cursorFunc, std::string &bodyHeader,
@@ -468,6 +469,8 @@ void ClangParser::processBridgeFunction( ClangCursor *cursorFunc, const std::str
 	std::string typeDecl;
 	std::string varName;
 
+	bool bAllPod = true;
+
 	ClangCursorVec::const_iterator itor = children.begin();
 	ClangCursorVec::const_iterator endt = children.end();
 
@@ -496,6 +499,9 @@ void ClangParser::processBridgeFunction( ClangCursor *cursorFunc, const std::str
 			}
 			else
 			{
+				if( bAllPod && typeDecl.find( "std::string" ) != std::string::npos )
+					bAllPod = false;
+
 				varFuncDecl += typeDecl + " " + varName + ", ";
 				varFuncCall += varName + ", ";
 			}
@@ -519,8 +525,16 @@ void ClangParser::processBridgeFunction( ClangCursor *cursorFunc, const std::str
 	if( !funcNameUpperCase.empty() && !prefixName.empty() )
 		funcNameUpperCase[0] = (char)std::toupper( funcNameUpperCase[0] );
 
-	bodyCpp += fmt::format( mSourceLuaBridgeSwitchTemplateClassDecl, bridgeClassName, prefixName,
-							funcNameUpperCase, funcName, varFuncDecl, derivedClassName, varFuncCall );
+	if( bAllPod )
+	{
+		bodyCpp += fmt::format( mSourceLuaBridgeSwitchTemplateClassDecl, bridgeClassName, prefixName,
+								funcNameUpperCase, funcName, varFuncDecl, derivedClassName, varFuncCall );
+	}
+	else
+	{
+		bodyCpp += fmt::format( mSourceLuaBridgeSwitchNonPodTemplateClassDecl, bridgeClassName, prefixName,
+								funcNameUpperCase, funcName, varFuncDecl, derivedClassName, varFuncCall );
+	}
 
 	bodyHeader += fmt::format( mHeaderLuaBridgeSwitchTemplateClassDecl, prefixName, funcNameUpperCase,
 							   varFuncDecl );

@@ -56,6 +56,7 @@ class ClangParser
 
 	std::string mSourceLuaBridgeSwitchTemplateClassDecl;
 	std::string mHeaderLuaBridgeSwitchTemplateClassDecl;
+	std::string mSourceLuaBridgeSwitchNonPodTemplateClassDecl;
 
 	std::string mCustomNamespace;
 	// std::string mCustomMacroPrefix;
